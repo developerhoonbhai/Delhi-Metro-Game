@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delhi Metro Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --accent: #00d4ff;
+    --green: #00ff88;
+    --red: #ff4466;
+    --yellow: #ffd700;
+
+    --yellow-line: #FFD700;
+    --blue-line: #005DAA;
+    --red-line: #E8131B;
+    --green-line: #00913A;
+    --violet-line: #7B2D8B;
+    --pink-line: #F979B7;
+    --magenta-line: #B5009E;
+    --aqua-line: #00B5EF;
+    --grey-line: #9B9B9B;
+    --orange-line: #F57F20;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+
+  .header h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent), var(--yellow-line));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 6px;
+  }
+
+  /* SCORE BAR */
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 24px;
+    margin-bottom: 24px;
+  }
+
+  .score-item {
+    text-align: center;
+  }
+
+  .score-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .score-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .score-value.positive { color: var(--green); }
+  .score-value.negative { color: var(--red); }
+
+  /* HOME SCREEN */
+  #home-screen { animation: fadeIn 0.4s ease; }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .mode-card:hover::before { opacity: 0.07; }
+  .mode-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+  .mode-icon {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+  }
+
+  .mode-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .mode-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* LINE SELECTOR */
+  .line-selector {
+    margin-bottom: 20px;
+  }
+
+  .line-selector label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .line-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .line-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background: transparent;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+
+  .line-btn.active, .line-btn:hover {
+    color: #000;
+  }
+
+  /* GAME SCREEN */
+  #game-screen { display: none; animation: fadeIn 0.4s ease; }
+  #game-screen.active { display: block; }
+
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .game-mode-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { border-color: var(--text); color: var(--text); }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+  }
+
+  .question-main {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* METRO LINE DISPLAY */
+  .metro-line-display {
+    margin: 20px 0;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+
+  .metro-line-visual {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    padding: 10px 20px;
+  }
+
+  .station-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .station-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: var(--surface);
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .station-dot.hidden-station {
+    background: var(--surface2);
+    border-style: dashed;
+  }
+
+  .station-name-label {
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+    margin-top: 8px;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .station-name-label.hidden { color: var(--muted); font-style: italic; }
+  .station-name-label.blank { color: var(--accent); }
+
+  .line-segment {
+    height: 4px;
+    width: 30px;
+    flex-shrink: 0;
+    margin-top: -7px;
+  }
+
+  /* INPUT */
+  .answer-input-wrap {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .answer-input:focus { border-color: var(--accent); }
+  .answer-input.correct { border-color: var(--green); }
+  .answer-input.wrong { border-color: var(--red); }
+
+  .submit-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .submit-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+  /* FEEDBACK */
+  .feedback {
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    display: none;
+    animation: slideUp 0.3s ease;
+  }
+
+  .feedback.correct { background: rgba(0,255,136,0.1); border: 1px solid var(--green); color: var(--green); }
+  .feedback.wrong { background: rgba(255,68,102,0.1); border: 1px solid var(--red); color: var(--red); }
+  .feedback.show { display: block; }
+
+  .next-btn {
+    display: none;
+    width: 100%;
+    margin-top: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .next-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .next-btn.show { display: block; }
+
+  /* MCQ OPTIONS */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .option-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .option-btn.correct { border-color: var(--green); background: rgba(0,255,136,0.1); color: var(--green); }
+  .option-btn.wrong { border-color: var(--red); background: rgba(255,68,102,0.1); color: var(--red); }
+  .option-btn:disabled { cursor: default; }
+
+  /* ORDERING MODE */
+  .order-container {
+    margin-top: 16px;
+  }
+
+  .order-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .order-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+  }
+
+  .order-item:active { cursor: grabbing; }
+  .order-item.dragging { opacity: 0.5; border-color: var(--accent); }
+  .order-item.drag-over { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+
+  .order-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-right: 12px;
+  }
+
+  .drag-hint { color: var(--muted); font-size: 0.9rem; }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+  .score-value.bump { animation: pulse 0.3s ease; }
+
+  /* STREAK */
+  .streak-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    background: rgba(255,215,0,0.15);
+    border: 1px solid var(--yellow-line);
+    color: var(--yellow-line);
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: none;
+  }
+
+  .streak-badge.show { display: inline; }
+
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    .header h1 { font-size: 2.2rem; }
+    .line-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .back-btn { padding: 10px 18px; font-size: 0.85rem; }
+    .mode-card { padding: 18px 14px; }
+    .puzzle-reset-btn { padding: 10px 16px; font-size: 0.72rem; }
+    .puzzle-dot { width: 18px; height: 18px; }
+    .puzzle-station-node { padding: 0 4px; }
+  }
+
+  @media (max-width: 500px) {
+    .mode-grid { grid-template-columns: 1fr; }
+    .options-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 2rem; }
+    .line-segment { width: 20px; }
+    .puzzle-name { font-size: 0.65rem; }
+    .score-label { font-size: 0.65rem; }
+  }
+
+  /* Touch active states */
+  .mode-card:active { border-color: var(--accent); transform: translateY(-2px); }
+  .option-btn:active:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .line-btn:active { opacity: 0.8; }
+  .puzzle-station-node:active .puzzle-dot:not(.filled) { transform: scale(1.4); box-shadow: 0 0 8px rgba(0,212,255,0.5); }
+
+  .wrong-flash { animation: redFlash 0.4s ease; }
+
+  @keyframes redFlash {
+    0%,100% { border-color: var(--border); }
+    50% { border-color: var(--red); box-shadow: 0 0 10px rgba(255,68,102,0.5); }
+  }
+
+  /* ===== MAP PUZZLE MODE ===== */
+  .map-puzzle-wrap { position: relative; }
+
+  .puzzle-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .puzzle-progress {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .puzzle-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 80px;
+  }
+
+  .puzzle-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .puzzle-reset-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .puzzle-reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .puzzle-lines { display: flex; flex-direction: column; gap: 18px; }
+
+  .puzzle-line-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .puzzle-line-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .puzzle-station-strip {
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    gap: 0;
+  }
+
+  .puzzle-station-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  .puzzle-station-node:hover .puzzle-dot:not(.filled) {
+    transform: scale(1.4);
+    box-shadow: 0 0 8px rgba(0,212,255,0.5);
+  }
+
+  .puzzle-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: transparent;
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .puzzle-dot.filled { border-width: 2px; }
+
+  .puzzle-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    margin-top: 6px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 64px;
+    white-space: nowrap;
+  }
+
+  .puzzle-name.filled { color: inherit; font-weight: 700; white-space: nowrap; max-width: none; }
+
+  .puzzle-segment {
+    height: 3px;
+    width: 22px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 10px;
+  }
+
+  .puzzle-input-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .puzzle-input-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: min(400px, 90vw);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .puzzle-input-hint { font-size: 0.82rem; color: var(--muted); text-align: center; }
+  .puzzle-input-line { font-weight: 700; font-size: 1rem; letter-spacing: 1px; text-align: center; }
+  .puzzle-input-btns { display: flex; gap: 10px; }
+  .puzzle-input-btns .submit-btn { flex: 1; }
+  .puzzle-input-btns .option-btn { flex: 0 0 auto; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🚇 Delhi Metro</h1>
+    <p>STATION MEMORY CHALLENGE</p>
+  </div>
+
+  <!-- SCORE BAR -->
+  <div class="score-bar">
+    <div class="score-item">
+      <div class="score-label">Score</div>
+      <div class="score-value" id="score-display">0</div>
+    </div>
+    <div class="score-item">
+      <span class="streak-badge" id="streak-badge">🔥 <span id="streak-count">0</span> streak</span>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Correct</div>
+      <div class="score-value positive" id="correct-display">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Wrong</div>
+      <div class="score-value negative" id="wrong-display">0</div>
+    </div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div id="home-screen">
+    <div class="line-selector">
+      <label>Filter by line (optional)</label>
+      <div class="line-buttons" id="line-buttons"></div>
+    </div>
+    <div class="mode-grid">
+      <div class="mode-card" onclick="startGame('fill')">
+        <div class="mode-icon">✏️</div>
+        <div class="mode-title">Fill the Blanks</div>
+        <div class="mode-desc">A metro line is shown with some stations hidden. Type the missing station name.</div>
+      </div>
+      <div class="mode-card" onclick="startGame('identify')">
+        <div class="mode-icon">📍</div>
+        <div class="mode-title">Name the Station</div>
+        <div class="mode-desc">A station position is highlighted. Type the correct station name from 4 options.</div>
+      </div>
+      <div class="mode-card" onclick="startGame('order')">
+        <div class="mode-icon">🔀</div>
+        <div class="mode-title">Order the Stations</div>
+        <div class="mode-desc">Stations are shuffled. Drag and drop them into the correct sequence.</div>
+      </div>
+      <div class="mode-card" onclick="startGame('next')">
+        <div class="mode-icon">➡️</div>
+        <div class="mode-title">Next Station</div>
+        <div class="mode-desc">Given a station and direction, type what the next stop is.</div>
+      </div>
+      <div class="mode-card" onclick="startGame('map')" style="grid-column:1/-1">
+        <div class="mode-icon">🗺️</div>
+        <div class="mode-title">Map Puzzle</div>
+        <div class="mode-desc">All metro lines shown separately. Click any blank station and type its name to fill the map.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <span class="game-mode-badge" id="mode-badge">FILL THE BLANKS</span>
+    </div>
+    <div id="question-area"></div>
+  </div>
+
+</div>
+
+<script>
+// =================== DELHI METRO DATA ===================
+const LINES = {
+  yellow: {
+    name: "Yellow Line",
+    color: "#FFD700",
+    stations: ["Samaypur Badli","Rohini Sector 18-19","Haiderpur Badli Mor","Jahangirpuri","Adarsh Nagar","Azadpur","Model Town","GTB Nagar","Vishwavidyalaya","Vidhan Sabha","Civil Lines","Kashmere Gate","Chandni Chowk","Chawri Bazar","New Delhi","Rajiv Chowk","Patel Chowk","Central Secretariat","Udyog Bhawan","Lok Kalyan Marg","Jor Bagh","INA","AIIMS","Green Park","Hauz Khas","Malviya Nagar","Saket","Qutab Minar","Chattarpur","Sultanpur","Ghitorni","Arjan Garh","Guru Dronacharya","Sikanderpur","MG Road","IFFCO Chowk","Millennium City Centre"]
+  },
+  blue: {
+    name: "Blue Line",
+    color: "#005DAA",
+    stations: ["Dwarka Sector 21","Dwarka Sector 8","Dwarka Sector 9","Dwarka Sector 10","Dwarka Sector 11","Dwarka Sector 12","Dwarka Sector 13","Dwarka Sector 14","Dwarka","Dwarka Mor","Nawada","Uttam Nagar West","Uttam Nagar East","Janakpuri West","Janakpuri East","Tilak Nagar","Subhash Nagar","Tagore Garden","Rajouri Garden","Ramesh Nagar","Moti Nagar","Kirti Nagar","Shadipur","Patel Nagar","Rajendra Place","Karol Bagh","Jhandewalan","Ramakrishna Ashram Marg","Rajiv Chowk","Mandi House","Supreme Court","Indraprastha","Yamuna Bank"]
+  },
+  blue_vaishali: {
+    name: "Blue Line (Vaishali Branch)",
+    color: "#005DAA",
+    stations: ["Yamuna Bank","Laxmi Nagar","Nirman Vihar","Preet Vihar","Karkarduma","Anand Vihar ISBT","Kaushambi","Vaishali"]
+  },
+  blue_noida: {
+    name: "Blue Line (Noida Branch)",
+    color: "#005DAA",
+    stations: ["Yamuna Bank","Akshardham","Mayur Vihar Phase 1","Mayur Vihar Extension","New Ashok Nagar","Noida Sector 15","Noida Sector 16","Noida Sector 18","Botanical Garden","Noida City Centre","Golf Course","Noida Sector 34","Noida Sector 52","Noida Sector 61","Noida Sector 59","Noida Sector 62","Noida Electronic City"]
+  },
+  red: {
+    name: "Red Line",
+    color: "#E8131B",
+    stations: ["Rithala","Rohini West","Rohini East","Pitam Pura","Kohat Enclave","Netaji Subhash Place","Keshav Puram","Kanhaiya Nagar","Inderlok","Shastri Nagar","Pratap Nagar","Pulbangash","Tis Hazari","Kashmere Gate","Shastri Park","Seelampur","Welcome","Shahdara","Mansarovar Park","Jhilmil","Dilshad Garden","Shaheed Nagar","Raj Bagh","Rajendra Nagar (Ghaziabad)","Shyam Park","Mohan Nagar","Arthala","Hindon River","Shaheed Sthal (New Bus Adda)"]
+  },
+  green: {
+    name: "Green Line",
+    color: "#00913A",
+    stations: ["Inderlok","Ashok Park Main","Punjabi Bagh","Punjabi Bagh West","Shivaji Park","Madipur","Paschim Vihar East","Paschim Vihar West","Peera Garhi","Udyog Nagar","Surajmal Stadium","Nangloi","Nangloi Railway Station","Rajdhani Park","Mundka","Mundka Industrial Area","Ghevra","Tikri Kalan","Tikri Border","Pandit Shree Ram Sharma","Bahadurgarh City","Brigadier Hoshiyar Singh"]
+  },
+  green_branch: {
+    name: "Green Line (Kirti Nagar Branch)",
+    color: "#00913A",
+    stations: ["Ashok Park Main","Satguru Ram Singh Marg","Kirti Nagar"]
+  },
+  violet: {
+    name: "Violet Line",
+    color: "#7B2D8B",
+    stations: ["Kashmere Gate","Lal Quila","Jama Masjid","Delhi Gate","ITO","Mandi House","Janpath","Central Secretariat","Khan Market","JLN Stadium","Jangpura","Lajpat Nagar","Moolchand","Kailash Colony","Nehru Place","Kalkaji Mandir","Govind Puri","Okhla","Jasola Apollo","Sarita Vihar","Mohan Estate","Tughlakabad","Badarpur Border","Sarai","NHPC Chowk","Mewla Maharajpur","Sector 28","Badkal Mor","Old Faridabad","Neelam Chowk Ajronda","Bata Chowk","Escorts Mujesar","Sant Surdas (Sihi)","Raja Nahar Singh (Ballabhgarh)"]
+  },
+  pink: {
+    name: "Pink Line (Ring Metro)",
+    color: "#F979B7",
+    circular: true,
+    ringLength: 43,
+    stations: [
+      // Ring (43 stations, Burari → Majlis Park closes the loop):
+      "Majlis Park","Azadpur","Shalimar Bagh","Netaji Subhash Place","Shakurpur","Punjabi Bagh","ESI-Basaidarapur","Rajouri Garden","Mayapuri","Naraina Vihar","Delhi Cantt","Durgabai Deshmukh South Campus","Sir M Visvesvaraya Moti Bagh","Bhikaji Cama Place","Sarojini Nagar","INA","South Extension","Lajpat Nagar","Vinobapuri","Ashram","Hazrat Nizamuddin","Mayur Vihar Phase 1","Shree Ram Mandir Mayur Vihar","Trilokpuri Sanjay Lake","East Vinod Nagar - Mayur Vihar 2","Mandawali - West Vinod Nagar","IP Extension","Anand Vihar","Karkarduma","Karkarduma Court","Krishna Nagar","East Azad Nagar","Welcome","Jaffrabad","Maujpur-Babarpur","Yamuna Vihar","Bhajanpura","Khajuri Khas","Nanaksar-Sonia Vihar","Soorghat","Jagatpur-Wazirabad","Jharoda Majra","Burari",
+      // Spur from Maujpur-Babarpur eastward (3 stations, not part of ring):
+      "Gokulpuri","Johri Enclave","Shiv Vihar"
+    ]
+  },
+  magenta_north: {
+    name: "Magenta Line (North)",
+    color: "#B5009E",
+    stations: ["Deepali Chowk","Madhuban Chowk","Uttari Pitampura - Prashant Vihar","Haiderpur Village","Haiderpur Badli Mor","Bhalswa","Majlis Park"]
+  },
+  magenta: {
+    name: "Magenta Line",
+    color: "#B5009E",
+    stations: ["Krishna Park Extension","Janakpuri West","Dashmesh Public School Dabri Mor","Dashrathpuri","Palam","Sadar Bazar Cantonment","Terminal 1 IGI Airport","Shankar Vihar","Vasant Vihar","Munirka","RK Puram","IIT Delhi","Hauz Khas","Panchsheel Park","Chirag Delhi","Greater Kailash","Nehru Enclave","Kalkaji Mandir","Okhla NSIC","Sukhdev Vihar","Jamia Millia Islamia","Okhla Vihar","Jasola Vihar Shaheen Bagh","Kalindi Kunj","Okhla Bird Sanctuary","Botanical Garden"]
+  },
+  grey: {
+    name: "Grey Line",
+    color: "#9B9B9B",
+    stations: ["Dwarka","Nangli","Najafgarh","Dhansa Bus Stand"]
+  },
+  orange: {
+    name: "Airport Express (Orange Line)",
+    color: "#F57F20",
+    stations: ["New Delhi","Shivaji Stadium","Dhaula Kuan","Delhi Aerocity","IGI Airport (T3)","Dwarka Sector 21","Yashobhoomi Dwarka Sector 25"]
+  }
+};
+
+// State
+let state = {
+  score: 0,
+  correct: 0,
+  wrong: 0,
+  streak: 0,
+  mode: null,
+  selectedLine: 'all',
+  dragSrcIdx: null,
+  mapPuzzle: null
+};
+
+// Init line buttons
+function initLineButtons() {
+  const wrap = document.getElementById('line-buttons');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'line-btn active';
+  allBtn.textContent = 'All Lines';
+  allBtn.style.borderColor = '#00d4ff';
+  allBtn.style.color = '#00d4ff';
+  allBtn.onclick = () => selectLine('all', allBtn);
+  wrap.appendChild(allBtn);
+
+  Object.entries(LINES).forEach(([key, line]) => {
+    const btn = document.createElement('button');
+    btn.className = 'line-btn';
+    btn.textContent = line.name.replace(' Line','').replace(' (Aqua)','').replace(' (Airport)','');
+    btn.style.borderColor = line.color;
+    btn.onclick = () => selectLine(key, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectLine(key, btn) {
+  state.selectedLine = key;
+  document.querySelectorAll('.line-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.backgroundColor = '';
+    b.style.color = b.dataset.color || b.style.borderColor;
+  });
+  btn.classList.add('active');
+  const color = key === 'all' ? '#00d4ff' : LINES[key].color;
+  btn.style.backgroundColor = color;
+  btn.style.color = '#000';
+}
+
+function getRandomLine() {
+  if (state.selectedLine !== 'all') return [state.selectedLine, LINES[state.selectedLine]];
+  const keys = Object.keys(LINES);
+  const key = keys[Math.floor(Math.random() * keys.length)];
+  return [key, LINES[key]];
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function similarity(a, b) {
+  a = normalize(a); b = normalize(b);
+  if (a === b) return 1;
+  const la = a.length, lb = b.length;
+  if (!la || !lb) return 0;
+  const dp = Array.from({length: la+1}, (_, i) => Array.from({length: lb+1}, (_, j) => i ? (j ? 0 : i) : j));
+  for (let i = 1; i <= la; i++)
+    for (let j = 1; j <= lb; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return 1 - dp[la][lb] / Math.max(la, lb);
+}
+
+// Returns 'correct' (≥85%), 'close' (60–84%), or 'wrong' (<60%)
+function checkAnswer(val, answer) {
+  const sim = similarity(val, answer);
+  if (sim >= 0.85) return 'correct';
+  if (sim >= 0.60) return 'close';
+  return 'wrong';
+}
+
+// Score
+function updateScore(delta, correct) {
+  state.score += delta;
+  if (correct) { state.correct++; state.streak++; }
+  else { state.wrong++; state.streak = 0; }
+
+  const el = document.getElementById('score-display');
+  el.textContent = state.score;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+
+  document.getElementById('correct-display').textContent = state.correct;
+  document.getElementById('wrong-display').textContent = state.wrong;
+
+  const streak = document.getElementById('streak-badge');
+  const sc = document.getElementById('streak-count');
+  if (state.streak >= 3) {
+    streak.classList.add('show');
+    sc.textContent = state.streak;
+  } else {
+    streak.classList.remove('show');
+  }
+}
+
+function goHome() {
+  document.getElementById('home-screen').style.display = 'block';
+  document.getElementById('game-screen').classList.remove('active');
+  history.pushState({ screen: 'home' }, '');
+}
+
+function startGame(mode) {
+  state.mode = mode;
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('game-screen').classList.add('active');
+  const badges = { fill:'FILL THE BLANKS', identify:'NAME THE STATION', order:'ORDER STATIONS', next:'NEXT STATION', map:'MAP PUZZLE' };
+  document.getElementById('mode-badge').textContent = badges[mode];
+  history.pushState({ screen: 'game', mode }, '');
+  renderQuestion();
+}
+
+window.addEventListener('popstate', () => {
+  document.getElementById('home-screen').style.display = 'block';
+  document.getElementById('game-screen').classList.remove('active');
+});
+
+function renderQuestion() {
+  const area = document.getElementById('question-area');
+  if (state.mode === 'map') {
+    area.innerHTML = '';
+    renderMapPuzzle(area);
+    return;
+  }
+  area.innerHTML = '';
+  area.style.animation = 'none';
+  void area.offsetWidth;
+  area.style.animation = 'fadeIn 0.3s ease';
+
+  if (state.mode === 'fill') renderFill(area);
+  else if (state.mode === 'identify') renderIdentify(area);
+  else if (state.mode === 'order') renderOrder(area);
+  else if (state.mode === 'next') renderNext(area);
+}
+
+// ========== MODE 1: FILL THE BLANKS ==========
+function renderFill(area) {
+  const [lineKey, line] = getRandomLine();
+  const stations = line.stations;
+  if (stations.length < 5) { renderQuestion(); return; }
+
+  // Pick a segment of 7-10 stations
+  const segLen = Math.min(stations.length, 7 + Math.floor(Math.random() * 4));
+  const startIdx = Math.floor(Math.random() * (stations.length - segLen));
+  const segment = stations.slice(startIdx, startIdx + segLen);
+
+  // Hide 2-3 stations randomly (not first or last)
+  const hideCount = 2 + Math.floor(Math.random() * 2);
+  const hideIdxs = new Set();
+  while (hideIdxs.size < Math.min(hideCount, segment.length - 2)) {
+    const i = 1 + Math.floor(Math.random() * (segment.length - 2));
+    hideIdxs.add(i);
+  }
+  const hiddenList = [...hideIdxs].sort((a,b)=>a-b);
+  const currentHideIdx = hiddenList[0]; // Ask one at a time
+  const answer = segment[currentHideIdx];
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-text">LINE: <span style="color:${line.color};font-weight:700">${line.name}</span></div>
+    <div class="question-main">What is the missing station? (marked with ❓)</div>
+    <div class="metro-line-display">
+      <div class="metro-line-visual" id="line-visual"></div>
+    </div>
+    <div class="answer-input-wrap">
+      <input class="answer-input" id="ans-input" placeholder="Type station name..." autocomplete="off" />
+      <button class="submit-btn" onclick="checkFill('${answer.replace(/'/g,"\\'")}')">CHECK</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="renderQuestion()">NEXT QUESTION →</button>
+  `;
+  area.appendChild(card);
+
+  const visual = card.querySelector('#line-visual');
+  segment.forEach((st, i) => {
+    const node = document.createElement('div');
+    node.className = 'station-node';
+    const isHidden = i === currentHideIdx;
+    node.innerHTML = `
+      <div class="station-dot ${isHidden ? 'hidden-station' : ''}" style="border-color:${line.color};${!isHidden ? 'background:'+line.color : ''}"></div>
+      <div class="station-name-label ${isHidden ? 'blank' : ''}">${isHidden ? '❓' : st}</div>
+    `;
+    visual.appendChild(node);
+    if (i < segment.length - 1) {
+      const seg = document.createElement('div');
+      seg.className = 'line-segment';
+      seg.style.background = line.color;
+      seg.style.marginBottom = '14px';
+      visual.appendChild(seg);
+    }
+  });
+
+  card.querySelector('#ans-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkFill(answer);
+  });
+}
+
+function checkFill(answer) {
+  const input = document.getElementById('ans-input');
+  const fb = document.getElementById('feedback');
+  const nextBtn = document.getElementById('next-btn');
+  const val = input.value.trim();
+  if (!val) return;
+
+  input.disabled = true;
+  document.querySelector('.submit-btn').disabled = true;
+
+  const result = checkAnswer(val, answer);
+  if (result === 'correct') {
+    input.disabled = true;
+    document.querySelector('.submit-btn').disabled = true;
+    input.classList.add('correct');
+    fb.className = 'feedback correct show';
+    fb.textContent = `✅ Correct! The answer is "${answer}". +10 points`;
+    updateScore(10, true);
+    nextBtn.classList.add('show');
+  } else if (result === 'close') {
+    input.classList.remove('wrong-flash');
+    void input.offsetWidth;
+    input.classList.add('wrong-flash');
+    fb.className = 'feedback show';
+    fb.style.color = 'var(--yellow)';
+    fb.textContent = `🟡 You're close! Looks like a spelling issue — try again!`;
+  } else {
+    input.disabled = true;
+    document.querySelector('.submit-btn').disabled = true;
+    input.classList.add('wrong');
+    fb.className = 'feedback wrong show';
+    fb.style.color = '';
+    fb.textContent = `❌ Wrong! The answer was: ${answer}. -2 points`;
+    updateScore(-2, false);
+    nextBtn.classList.add('show');
+  }
+}
+
+// ========== MODE 2: IDENTIFY / MCQ ==========
+function renderIdentify(area) {
+  const [lineKey, line] = getRandomLine();
+  const stations = line.stations;
+  if (stations.length < 5) { renderQuestion(); return; }
+
+  const idx = 1 + Math.floor(Math.random() * (stations.length - 2));
+  const answer = stations[idx];
+
+  // Generate wrong options from same line + other lines
+  const wrongs = new Set();
+  while (wrongs.size < 3) {
+    const allStations = Object.values(LINES).flatMap(l => l.stations);
+    const w = allStations[Math.floor(Math.random() * allStations.length)];
+    if (w !== answer) wrongs.add(w);
+  }
+  const options = shuffle([answer, ...wrongs]);
+
+  // Show segment around the station
+  const startI = Math.max(0, idx - 3);
+  const endI = Math.min(stations.length - 1, idx + 3);
+  const segment = stations.slice(startI, endI + 1);
+  const highlightI = idx - startI;
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-text">LINE: <span style="color:${line.color};font-weight:700">${line.name}</span></div>
+    <div class="question-main">Which station is highlighted in <span style="color:${line.color}">●</span> on the line?</div>
+    <div class="metro-line-display">
+      <div class="metro-line-visual" id="line-visual"></div>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="renderQuestion()">NEXT QUESTION →</button>
+  `;
+  area.appendChild(card);
+
+  const visual = card.querySelector('#line-visual');
+  segment.forEach((st, i) => {
+    const node = document.createElement('div');
+    node.className = 'station-node';
+    const isTarget = i === highlightI;
+    node.innerHTML = `
+      <div class="station-dot" style="border-color:${line.color};background:${isTarget ? '#fff' : line.color};width:${isTarget?'18px':'12px'};height:${isTarget?'18px':'12px'};border-width:${isTarget?'3px':'2px'}"></div>
+      <div class="station-name-label">${isTarget ? '❓' : st}</div>
+    `;
+    visual.appendChild(node);
+    if (i < segment.length - 1) {
+      const seg = document.createElement('div');
+      seg.className = 'line-segment';
+      seg.style.background = line.color;
+      seg.style.marginBottom = '14px';
+      visual.appendChild(seg);
+    }
+  });
+
+  const grid = card.querySelector('#options-grid');
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => checkIdentify(opt, answer, grid);
+    grid.appendChild(btn);
+  });
+}
+
+function checkIdentify(chosen, answer, grid) {
+  const fb = document.getElementById('feedback');
+  const nextBtn = document.getElementById('next-btn');
+  grid.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === answer) b.classList.add('correct');
+    else if (b.textContent === chosen && chosen !== answer) b.classList.add('wrong');
+  });
+  if (chosen === answer) {
+    fb.className = 'feedback correct show';
+    fb.textContent = '✅ Correct! +10 points';
+    updateScore(10, true);
+  } else {
+    fb.className = 'feedback wrong show';
+    fb.textContent = `❌ Wrong! Correct answer: ${answer}. -2 points`;
+    updateScore(-2, false);
+  }
+  nextBtn.classList.add('show');
+}
+
+// ========== MODE 3: ORDER THE STATIONS ==========
+const isTouch = () => window.matchMedia('(hover: none)').matches;
+let _touchSelIdx = null;
+
+function renderOrder(area) {
+  const [lineKey, line] = getRandomLine();
+  const stations = line.stations;
+  if (stations.length < 5) { renderQuestion(); return; }
+
+  const count = 5 + Math.floor(Math.random() * 3);
+  const startIdx = Math.floor(Math.random() * (stations.length - count));
+  const correct = stations.slice(startIdx, startIdx + count);
+  const shuffled = shuffle(correct);
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-text">LINE: <span style="color:${line.color};font-weight:700">${line.name}</span></div>
+    <div class="question-main">${isTouch() ? 'Tap a station to select it, then tap another to swap positions' : 'Drag to arrange these stations in the correct order'} (start → end of line segment)</div>
+    <div class="order-container">
+      <ul class="order-list" id="order-list"></ul>
+      <button class="submit-btn" style="width:100%" onclick="checkOrder(${JSON.stringify(correct)})">CHECK ORDER</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="renderQuestion()">NEXT QUESTION →</button>
+  `;
+  area.appendChild(card);
+
+  const list = card.querySelector('#order-list');
+
+  shuffled.forEach((st, idx) => {
+    const li = document.createElement('li');
+    li.className = 'order-item';
+    li.draggable = !isTouch();
+    li.dataset.idx = idx;
+    li.innerHTML = `<span><span class="order-num">#${idx+1}</span>${st}</span><span class="drag-hint">${isTouch() ? '↕' : '⠿'}</span>`;
+
+    if (!isTouch()) {
+      // Desktop drag-and-drop
+      li.addEventListener('dragstart', () => { state.dragSrcIdx = [...list.children].indexOf(li); li.classList.add('dragging'); });
+      li.addEventListener('dragend', () => li.classList.remove('dragging'));
+      li.addEventListener('dragover', e => { e.preventDefault(); li.classList.add('drag-over'); });
+      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('drop', e => {
+        e.preventDefault();
+        li.classList.remove('drag-over');
+        const all = [...list.children];
+        const dragEl = all[state.dragSrcIdx];
+        if (dragEl && dragEl !== li) {
+          const from = all.indexOf(dragEl), to = all.indexOf(li);
+          if (from < to) list.insertBefore(dragEl, li.nextSibling);
+          else list.insertBefore(dragEl, li);
+          [...list.querySelectorAll('.order-item')].forEach((el, i) => {
+            el.dataset.idx = i;
+            el.querySelector('.order-num').textContent = `#${i+1}`;
+          });
+          state.dragSrcIdx = to;
+        }
+      });
+    } else {
+      // Mobile tap-to-swap
+      li.addEventListener('click', () => {
+        const all = [...list.querySelectorAll('.order-item')];
+        const cur = all.indexOf(li);
+        if (_touchSelIdx === null) {
+          _touchSelIdx = cur;
+          li.style.outline = '2px solid var(--accent)';
+          li.style.boxShadow = '0 0 10px rgba(0,212,255,0.4)';
+        } else if (_touchSelIdx === cur) {
+          _touchSelIdx = null;
+          li.style.outline = '';
+          li.style.boxShadow = '';
+        } else {
+          const a = all[_touchSelIdx], b = li;
+          const aNext = a.nextSibling, bNext = b.nextSibling;
+          if (aNext === b) list.insertBefore(b, a);
+          else if (bNext === a) list.insertBefore(a, b);
+          else { list.insertBefore(a, bNext); list.insertBefore(b, aNext); }
+          a.style.outline = ''; a.style.boxShadow = '';
+          _touchSelIdx = null;
+          [...list.querySelectorAll('.order-item')].forEach((el, i) => {
+            el.dataset.idx = i;
+            el.querySelector('.order-num').textContent = `#${i+1}`;
+          });
+        }
+      });
+    }
+
+    list.appendChild(li);
+  });
+}
+
+function checkOrder(correct) {
+  const list = document.getElementById('order-list');
+  const items = [...list.querySelectorAll('.order-item')];
+  const userOrder = items.map(li => li.querySelector('span > span + *') ? li.querySelector('span').textContent.replace(/^#\d+/,'').trim() : li.textContent.replace(/^#\d+/,'').replace('⠿','').trim());
+  // Simpler extraction:
+  const userNames = items.map(li => {
+    const span = li.querySelector('span');
+    return span.textContent.replace(/^#\d+/, '').trim();
+  });
+
+  const isCorrect = userNames.every((n, i) => normalize(n) === normalize(correct[i]));
+  const fb = document.getElementById('feedback');
+  const nextBtn = document.getElementById('next-btn');
+  document.querySelector('.submit-btn').disabled = true;
+
+  if (isCorrect) {
+    fb.className = 'feedback correct show';
+    fb.innerHTML = `✅ Perfect order! +10 points`;
+    updateScore(10, true);
+  } else {
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = `❌ Not quite! Correct order: ${correct.join(' → ')}. -2 points`;
+    updateScore(-2, false);
+  }
+  nextBtn.classList.add('show');
+}
+
+// ========== MODE 4: NEXT STATION ==========
+function renderNext(area) {
+  const [lineKey, line] = getRandomLine();
+  const stations = line.stations;
+  if (stations.length < 3) { renderQuestion(); return; }
+
+  const isCircular = !!line.circular;
+  // For circular lines, only pick from ring stations (not spur)
+  const effectiveLength = (isCircular && line.ringLength) ? line.ringLength : stations.length;
+  const pickCount = isCircular ? effectiveLength : effectiveLength - 1;
+
+  const idx = Math.floor(Math.random() * pickCount);
+  const current = stations[idx];
+  const nextIdx = (isCircular && idx === effectiveLength - 1) ? 0 : idx + 1;
+  const answer = stations[nextIdx];
+
+  const direction = isCircular
+    ? 'clockwise around the ring'
+    : (idx < stations.length / 2 ? 'towards ' + stations[stations.length-1] : 'towards ' + stations[0]);
+
+  const posInfo = isCircular
+    ? `Ring station ${idx+1} of ${effectiveLength} • ♻ Circular Line`
+    : `Station ${idx+1} of ${stations.length} on this line`;
+
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div class="question-text">LINE: <span style="color:${line.color};font-weight:700">${line.name}</span></div>
+    <div class="question-main">You are at <span style="color:${line.color}">${current}</span>.<br>Travelling <strong>${direction}</strong>, what is the NEXT station?</div>
+    <div style="margin:16px 0;padding:14px;background:var(--surface2);border-radius:10px;font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--muted)">
+      ${posInfo}
+    </div>
+    <div class="answer-input-wrap">
+      <input class="answer-input" id="ans-input" placeholder="Next station..." autocomplete="off" />
+      <button class="submit-btn" onclick="checkNext('${answer.replace(/'/g,"\\'")}')">CHECK</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn" onclick="renderQuestion()">NEXT QUESTION →</button>
+  `;
+  area.appendChild(card);
+
+  card.querySelector('#ans-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkNext(answer);
+  });
+}
+
+function checkNext(answer) {
+  const input = document.getElementById('ans-input');
+  const fb = document.getElementById('feedback');
+  const nextBtn = document.getElementById('next-btn');
+  const val = input.value.trim();
+  if (!val) return;
+
+  input.disabled = true;
+  document.querySelector('.submit-btn').disabled = true;
+
+  const result = checkAnswer(val, answer);
+  if (result === 'correct') {
+    input.classList.add('correct');
+    fb.className = 'feedback correct show';
+    fb.textContent = `✅ Correct! +10 points`;
+    updateScore(10, true);
+  } else if (result === 'close') {
+    input.classList.add('correct');
+    fb.className = 'feedback correct show';
+    fb.textContent = `✅ Close enough! Looks like a spelling issue — it's "${answer}". +10 points`;
+    updateScore(10, true);
+  } else {
+    input.classList.add('wrong');
+    fb.className = 'feedback wrong show';
+    fb.textContent = `❌ Wrong! The next station is: ${answer}. -2 points`;
+    updateScore(-2, false);
+  }
+  nextBtn.classList.add('show');
+}
+
+// ========== MODE 5: MAP PUZZLE ==========
+function renderMapPuzzle(area) {
+  if (!state.mapPuzzle) {
+    state.mapPuzzle = {};
+    Object.entries(LINES).forEach(([key, line]) => {
+      state.mapPuzzle[key] = line.stations.map(() => false);
+    });
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'map-puzzle-wrap';
+  wrap.innerHTML = `
+    <div class="puzzle-header">
+      <div class="puzzle-progress" id="puzzle-prog-text">Loading...</div>
+      <div class="puzzle-progress-bar"><div class="puzzle-progress-fill" id="puzzle-prog-fill" style="width:0%"></div></div>
+      <button class="puzzle-reset-btn" id="puzzle-reset-btn">Reset</button>
+    </div>
+    <div class="puzzle-lines" id="puzzle-lines"></div>
+    <div class="puzzle-input-overlay" id="puzzle-overlay" style="display:none">
+      <div class="puzzle-input-modal">
+        <div class="puzzle-input-hint">Click a station to guess its name</div>
+        <div class="puzzle-input-line" id="pi-line">Line</div>
+        <div style="font-size:0.75rem;color:var(--muted);font-family:'Space Mono',monospace;text-align:center" id="pi-neighbors"></div>
+        <input class="answer-input" id="pi-input" placeholder="Station name..." autocomplete="off" />
+        <div class="puzzle-input-btns">
+          <button class="submit-btn" id="pi-submit">CHECK</button>
+          <button class="option-btn" id="pi-cancel">Cancel</button>
+        </div>
+        <div class="feedback" id="pi-feedback"></div>
+      </div>
+    </div>
+  `;
+  area.appendChild(wrap);
+
+  wrap.querySelector('#puzzle-reset-btn').onclick = () => {
+    state.mapPuzzle = null;
+    area.innerHTML = '';
+    renderMapPuzzle(area);
+  };
+
+  const linesDiv = wrap.querySelector('#puzzle-lines');
+
+  Object.entries(LINES).forEach(([lineKey, line]) => {
+    const row = document.createElement('div');
+    row.className = 'puzzle-line-row';
+
+    const label = document.createElement('div');
+    label.className = 'puzzle-line-label';
+    label.style.color = line.color;
+    label.textContent = line.name;
+    row.appendChild(label);
+
+    const strip = document.createElement('div');
+    strip.className = 'puzzle-station-strip';
+
+    line.stations.forEach((st, i) => {
+      const node = document.createElement('div');
+      node.className = 'puzzle-station-node';
+
+      const filled = state.mapPuzzle[lineKey][i];
+      node.innerHTML = `
+        <div class="puzzle-dot${filled ? ' filled' : ''}" style="border-color:${line.color}${filled ? ';background:'+line.color : ''}"></div>
+        <div class="puzzle-name${filled ? ' filled' : ''}" style="${filled ? 'color:'+line.color : ''}">${filled ? st : '?'}</div>
+      `;
+
+      if (!filled) {
+        node.onclick = () => openPuzzleInput(lineKey, i, st, line, node, wrap);
+      }
+
+      strip.appendChild(node);
+
+      if (i < line.stations.length - 1) {
+        const seg = document.createElement('div');
+        seg.className = 'puzzle-segment';
+        seg.style.background = line.color;
+        strip.appendChild(seg);
+      }
+    });
+
+    row.appendChild(strip);
+    linesDiv.appendChild(row);
+  });
+
+  updatePuzzleProgress(wrap);
+}
+
+function openPuzzleInput(lineKey, stIdx, answer, line, node, wrap) {
+  const overlay = wrap.querySelector('#puzzle-overlay');
+  const piLine = wrap.querySelector('#pi-line');
+  const piNeighbors = wrap.querySelector('#pi-neighbors');
+  const piInput = wrap.querySelector('#pi-input');
+  const piSubmit = wrap.querySelector('#pi-submit');
+  const piCancel = wrap.querySelector('#pi-cancel');
+  const piFb = wrap.querySelector('#pi-feedback');
+
+  piLine.textContent = line.name;
+  piLine.style.color = line.color;
+
+  const stations = line.stations;
+  const prev = stIdx > 0 ? (state.mapPuzzle[lineKey][stIdx-1] ? stations[stIdx-1] : '?') : null;
+  const next = stIdx < stations.length-1 ? (state.mapPuzzle[lineKey][stIdx+1] ? stations[stIdx+1] : '?') : null;
+  let hint = '';
+  if (prev !== null) hint += `← ${prev}`;
+  if (prev !== null && next !== null) hint += '  ●  ';
+  if (next !== null) hint += `${next} →`;
+  piNeighbors.textContent = hint;
+
+  piInput.value = '';
+  piInput.disabled = false;
+  piSubmit.disabled = false;
+  piFb.className = 'feedback';
+  piFb.style.color = '';
+  overlay.style.display = 'flex';
+  setTimeout(() => piInput.focus(), 50);
+
+  const check = () => {
+    const val = piInput.value.trim();
+    if (!val) return;
+    const result = checkAnswer(val, answer);
+    if (result === 'correct') {
+      piInput.disabled = true;
+      piSubmit.disabled = true;
+      piFb.className = 'feedback correct show';
+      piFb.textContent = `✅ "${answer}"`;
+      state.mapPuzzle[lineKey][stIdx] = true;
+      updateScore(5, true);
+      const dot = node.querySelector('.puzzle-dot');
+      const nameEl = node.querySelector('.puzzle-name');
+      dot.classList.add('filled');
+      dot.style.background = line.color;
+      nameEl.textContent = answer;
+      nameEl.classList.add('filled');
+      nameEl.style.color = line.color;
+      node.onclick = null;
+      updatePuzzleProgress(wrap);
+      setTimeout(() => { overlay.style.display = 'none'; }, 700);
+    } else if (result === 'close') {
+      piInput.classList.remove('wrong-flash');
+      void piInput.offsetWidth;
+      piInput.classList.add('wrong-flash');
+      piFb.className = 'feedback show';
+      piFb.style.color = 'var(--yellow)';
+      piFb.textContent = `🟡 You're close! Looks like a spelling issue — try again!`;
+    } else {
+      piInput.classList.remove('wrong-flash');
+      void piInput.offsetWidth;
+      piInput.classList.add('wrong-flash');
+      piFb.className = 'feedback wrong show';
+      piFb.style.color = '';
+      piFb.textContent = `❌ Not quite — try again!`;
+      updateScore(-1, false);
+    }
+  };
+
+  piSubmit.onclick = check;
+  piCancel.onclick = () => { overlay.style.display = 'none'; };
+  piInput.onkeydown = e => {
+    if (e.key === 'Enter') check();
+    if (e.key === 'Escape') { overlay.style.display = 'none'; }
+  };
+}
+
+function updatePuzzleProgress(wrap) {
+  const totalStations = Object.values(LINES).reduce((s, l) => s + l.stations.length, 0);
+  const filledCount = Object.values(state.mapPuzzle).reduce((s, arr) => s + arr.filter(Boolean).length, 0);
+  const pct = ((filledCount / totalStations) * 100).toFixed(1);
+  const progText = wrap.querySelector('#puzzle-prog-text');
+  const progFill = wrap.querySelector('#puzzle-prog-fill');
+  if (filledCount === totalStations) {
+    progText.textContent = `🎉 ALL ${totalStations} STATIONS FILLED! Delhi Metro Master!`;
+    progText.style.color = 'var(--green)';
+  } else {
+    progText.textContent = `${filledCount} / ${totalStations} stations filled (${pct}%)`;
+    progText.style.color = 'var(--accent)';
+  }
+  if (progFill) progFill.style.width = pct + '%';
+}
+
+// Init
+initLineButtons();
+history.replaceState({ screen: 'home' }, '');
+</script>
+</body>
+</html>
